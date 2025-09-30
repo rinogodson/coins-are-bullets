@@ -1,46 +1,46 @@
 function love.load()
-	ship = { x = 200, y = 200, w = 40, h = 40, speed = 200 }
-	bullets = {}
-	rocks = {}
-	coins = {}
+	Ship = { x = 200, y = 200, w = 40, h = 40, speed = 200 }
+	Bullets = {}
+	Rocks = {}
+	Coins = {}
 	Score = 0
 end
 
 function love.update(dt)
 	if math.random() < 0.02 then
-		table.insert(rocks, { x = math.random(0, 800), y = 600, w = 40, h = 40 })
+		table.insert(Rocks, { x = math.random(0, 800), y = 600, w = 40, h = 40 })
 	end
 	if math.random() < 0.01 then
-		table.insert(coins, { x = math.random(0, 800), y = 600, w = 20, h = 20 })
+		table.insert(Coins, { x = math.random(0, 800), y = 600, w = 20, h = 20 })
 	end
 
-	for _, r in ipairs(rocks) do
+	for _, r in ipairs(Rocks) do
 		r.y = r.y - 200 * dt
 	end
-	for _, c in ipairs(coins) do
+	for _, c in ipairs(Coins) do
 		c.y = c.y - 200 * dt
 	end
 
-	for _, b in ipairs(bullets) do
+	for _, b in ipairs(Bullets) do
 		b.y = b.y + 400 * dt
 	end
 
-	for i, c in ipairs(coins) do
-		if CheckCollision(ship, c) then
+	for i, c in ipairs(Coins) do
+		if CheckCollision(Ship, c) then
 			Score = Score + 1
-			table.remove(coins, i)
+			table.remove(Coins, i)
 		end
 	end
 
-	for _, r in ipairs(rocks) do
-		if CheckCollision(ship, r) then
+	for _, r in ipairs(Rocks) do
+		if CheckCollision(Ship, r) then
 			love.event.quit("restart")
 		end
 
-		for j, b in ipairs(bullets) do
+		for j, b in ipairs(Bullets) do
 			if CheckCollision(r, b) then
-				table.remove(rocks, j)
-				table.remove(bullets, j)
+				table.remove(Rocks, j)
+				table.remove(Bullets, j)
 				break
 			end
 		end
@@ -53,14 +53,14 @@ function CheckCollision(a, b)
 end
 
 function love.draw()
-	love.graphics.rectangle("fill", ship.x, ship.y, ship.w, ship.h)
-	for _, r in ipairs(rocks) do
+	love.graphics.rectangle("fill", Ship.x, Ship.y, Ship.w, Ship.h)
+	for _, r in ipairs(Rocks) do
 		love.graphics.rectangle("line", r.x, r.y, r.w, r.h)
 	end
-	for _, c in ipairs(coins) do
+	for _, c in ipairs(Coins) do
 		love.graphics.circle("fill", c.x, c.y, c.w / 2)
 	end
-	for _, b in ipairs(bullets) do
+	for _, b in ipairs(Bullets) do
 		love.graphics.circle("fill", b.x, b.y, b.w / 2)
 	end
 	love.graphics.print("Score: " .. Score, 10, 10)
@@ -68,13 +68,13 @@ end
 
 function love.keypressed(key)
 	if key == "up" then
-		ship.y = ship.y - 50
+		Ship.y = Ship.y - 50
 	end
 	if key == "down" then
-		ship.y = ship.y + 50
+		Ship.y = Ship.y + 50
 	end
 	if key == "space" then
-		table.insert(bullets, { x = ship.x + ship.w, y = ship.y + ship.h / 2, w = 10, h = 5 })
+		table.insert(Bullets, { x = Ship.x + Ship.w, y = Ship.y + Ship.h / 2, w = 10, h = 5 })
 		Score = Score - 1
 	end
 end
