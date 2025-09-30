@@ -1,5 +1,8 @@
 function love.load()
-	Ship = { x = 400, y = 500, w = 40, h = 40, speed = 200 }
+	WindowDims = { x = 600, y = 400 }
+	Shipsize = 40
+	love.window.setMode(WindowDims.x, WindowDims.y)
+	Ship = { x = Shipsize, y = (WindowDims.y / 2) - (Shipsize / 2), w = Shipsize, h = Shipsize, speed = 200 }
 	Bullets = {}
 	Rocks = {}
 	Coins = {}
@@ -8,21 +11,21 @@ end
 
 function love.update(dt)
 	if math.random() < 0.02 then
-		table.insert(Rocks, { x = math.random(0, 800), y = 0, w = 40, h = 40 })
+		table.insert(Rocks, { x = WindowDims.x, y = math.random(0, 800), w = 40, h = 40 })
 	end
 	if math.random() < 0.01 then
-		table.insert(Coins, { x = math.random(0, 800), y = 0, w = 20, h = 20 })
+		table.insert(Coins, { x = WindowDims.x, y = math.random(0, 800), w = 20, h = 20 })
 	end
 
 	for _, r in ipairs(Rocks) do
-		r.y = r.y + 200 * dt
+		r.x = r.x - 200 * dt
 	end
 	for _, c in ipairs(Coins) do
-		c.y = c.y + 200 * dt
+		c.x = c.x - 200 * dt
 	end
 
 	for _, b in ipairs(Bullets) do
-		b.y = b.y - 400 * dt
+		b.x = b.x + 400 * dt
 	end
 
 	for i, c in ipairs(Coins) do
@@ -67,11 +70,11 @@ function love.draw()
 end
 
 function love.keypressed(key)
-	if key == "right" then
-		Ship.x = Ship.x + 50
+	if key == "up" then
+		Ship.y = Ship.y - 50
 	end
-	if key == "left" then
-		Ship.x = Ship.x - 50
+	if key == "down" then
+		Ship.y = Ship.y + 50
 	end
 	if key == "space" then
 		table.insert(Bullets, { x = Ship.x + Ship.w, y = Ship.y + Ship.h / 2, w = 10, h = 5 })
