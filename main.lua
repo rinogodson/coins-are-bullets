@@ -11,10 +11,10 @@ end
 
 function love.update(dt)
 	if math.random() < 0.02 then
-		table.insert(Rocks, { x = WindowDims.x, y = math.random(0, 800), w = 40, h = 40 })
+		table.insert(Rocks, { x = WindowDims.x, y = math.random(0, WindowDims.y - 40), w = 40, h = 40 })
 	end
 	if math.random() < 0.01 then
-		table.insert(Coins, { x = WindowDims.x, y = math.random(0, 800), w = 20, h = 20 })
+		table.insert(Coins, { x = WindowDims.x, y = math.random(0, WindowDims.y - 20), w = 20, h = 20 })
 	end
 
 	for _, r in ipairs(Rocks) do
@@ -35,17 +35,21 @@ function love.update(dt)
 		end
 	end
 
-	for _, r in ipairs(Rocks) do
-		if CheckCollision(Ship, r) then
-			love.event.quit("restart")
-		end
-
-		for j, b in ipairs(Bullets) do
+	for i = #Rocks, 1, -1 do
+		local r = Rocks[i]
+		for j = #Bullets, 1, -1 do
+			local b = Bullets[j]
 			if CheckCollision(r, b) then
-				table.remove(Rocks, j)
+				table.remove(Rocks, i)
 				table.remove(Bullets, j)
 				break
 			end
+		end
+	end
+
+	for i = #Bullets, 1, -1 do
+		if Bullets[i].x > WindowDims.x then
+			table.remove(Bullets, i)
 		end
 	end
 end
@@ -71,10 +75,10 @@ end
 
 function love.keypressed(key)
 	if key == "up" then
-		Ship.y = Ship.y - 50
+		Ship.y = Ship.y - 10
 	end
 	if key == "down" then
-		Ship.y = Ship.y + 50
+		Ship.y = Ship.y + 10
 	end
 	if key == "space" then
 		table.insert(Bullets, { x = Ship.x + Ship.w, y = Ship.y + Ship.h / 2, w = 10, h = 5 })
