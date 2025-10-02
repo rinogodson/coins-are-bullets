@@ -21,8 +21,14 @@ function love.load()
 	WindowDims = { x = 600, y = 400 }
 	Herosize = 50
 	love.window.setMode(WindowDims.x, WindowDims.y)
-	HeroProps =
-		{ x = Herosize, y = (WindowDims.y / 2) - (Herosize / 2), rotation = 0, w = Herosize, h = Herosize, speed = 250 }
+	HeroProps = {
+		x = Herosize,
+		y = (WindowDims.y / 2) - (Herosize / 2),
+		rotation = 0,
+		w = Herosize,
+		h = Herosize / 2,
+		speed = 250,
+	}
 	Bullets = {}
 	Bills = {}
 	Coins = {}
@@ -142,7 +148,7 @@ function love.draw()
 
 	local img = Animation.images[Animation.current]
 	local scaleX = HeroProps.w / Hero:getWidth()
-	local scaleY = HeroProps.h / Hero:getHeight()
+	local scaleY = HeroProps.h / Hero:getHeight() * 2
 	love.graphics.draw(
 		img,
 		HeroProps.x,
