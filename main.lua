@@ -1,7 +1,21 @@
 function love.load()
-	DEBUG = false
+	DEBUG = true
+
+	love.graphics.setDefaultFilter("nearest", "nearest")
+
+	-- all of these shit here is for the animation of the player to work
+	Animation = {
+		images = {
+			love.graphics.newImage("superhero1.png"),
+			love.graphics.newImage("superhero2.png"),
+		},
+		current = 1,
+		timer = 0,
+		delay = 0.1,
+	}
+
 	WindowDims = { x = 600, y = 400 }
-	Herosize = 40
+	Herosize = 50
 	love.window.setMode(WindowDims.x, WindowDims.y)
 	HeroProps =
 		{ x = Herosize, y = (WindowDims.y / 2) - (Herosize / 2), rotation = 0, w = Herosize, h = Herosize, speed = 250 }
@@ -15,6 +29,12 @@ function love.load()
 end
 
 function love.update(dt)
+	Animation.timer = Animation.timer + dt
+	if Animation.timer >= Animation.delay then
+		Animation.timer = Animation.timer - Animation.delay
+		Animation.current = Animation.current % #Animation.images + 1
+	end
+
 	local isChanging = false
 	local moveDir = 0
 
@@ -104,10 +124,11 @@ end
 
 -- DRAW FN IS HERE VVV
 function love.draw()
+	local img = Animation.images[Animation.current]
 	local scaleX = HeroProps.w / Hero:getWidth()
 	local scaleY = HeroProps.h / Hero:getHeight()
 	love.graphics.draw(
-		Hero,
+		img,
 		HeroProps.x,
 		HeroProps.y,
 		HeroProps.rotation,
@@ -168,7 +189,7 @@ end
 
 function love.keypressed(key)
 	if key == "space" then
-		table.insert(Bullets, { x = HeroProps.x + HeroProps.w, y = HeroProps.y + HeroProps.h / 2, w = 10, h = 5 })
+		table.insert(Bullets, { x = HeroProps.x + HeroProps.w / 2, y = HeroProps.y, w = 10, h = 5 })
 		Score = Score - 1
 	end
 end
