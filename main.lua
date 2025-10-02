@@ -1,10 +1,17 @@
+_G.love = require("love")
+
 function love.load()
 	DEBUG = true
 
 	love.graphics.setDefaultFilter("nearest", "nearest")
 
 	-- background repeated scrolling stuff
-	Background = love.graphics.newImage("pBG/4.png")
+	Backgrounds = {
+		love.graphics.newImage("pBG/1.png"),
+		love.graphics.newImage("pBG/2.png"),
+		love.graphics.newImage("pBG/3.png"),
+		love.graphics.newImage("pBG/4.png"),
+	}
 	BGScrollProgress = 0
 
 	-- all of these shit here is for the animation of the player to work
@@ -42,7 +49,7 @@ BACKSCROLLSPEEDFACTOR = 100
 
 function love.update(dt)
 	BGScrollProgress = BGScrollProgress + BACKSCROLLSPEEDFACTOR * dt
-	local bgWidth = Background:getWidth() * 1.25
+	local bgWidth = Backgrounds[1]:getWidth() * 1.25
 	if BGScrollProgress >= bgWidth then
 		BGScrollProgress = BGScrollProgress - bgWidth
 	end
@@ -142,9 +149,12 @@ end
 
 -- DRAW FN IS HERE VVV
 function love.draw()
-	local bgWidth = Background:getWidth()
-	love.graphics.draw(Background, -BGScrollProgress, 0, 0, 1.25, 1.25)
-	love.graphics.draw(Background, -BGScrollProgress + (bgWidth * 1.25), 0, 0, 1.25, 1.25)
+	local bgWidth = Backgrounds[1]:getWidth()
+
+	for i, val in ipairs(Backgrounds) do
+		love.graphics.draw(val, -BGScrollProgress, 0, 0, 1.25, 1.25)
+		love.graphics.draw(val, (-BGScrollProgress + (bgWidth * 1.25)), 0, 0, 1.25, 1.25)
+	end
 
 	local img = Animation.images[Animation.current]
 	local scaleX = HeroProps.w / Hero:getWidth()
