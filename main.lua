@@ -3,6 +3,10 @@ function love.load()
 
 	love.graphics.setDefaultFilter("nearest", "nearest")
 
+	-- background repeated scrolling stuff
+	Background = love.graphics.newImage("pBG/4.png")
+	BGScrollProgress = 0
+
 	-- all of these shit here is for the animation of the player to work
 	Animation = {
 		images = {
@@ -28,7 +32,15 @@ function love.load()
 	Hero = love.graphics.newImage("superhero1.png")
 end
 
+BACKSCROLLSPEEDFACTOR = 100
+
 function love.update(dt)
+	BGScrollProgress = BGScrollProgress + BACKSCROLLSPEEDFACTOR * dt
+	local bgWidth = Background:getWidth() * 1.25
+	if BGScrollProgress >= bgWidth then
+		BGScrollProgress = BGScrollProgress - bgWidth
+	end
+
 	Animation.timer = Animation.timer + dt
 	if Animation.timer >= Animation.delay then
 		Animation.timer = Animation.timer - Animation.delay
@@ -124,6 +136,10 @@ end
 
 -- DRAW FN IS HERE VVV
 function love.draw()
+	local bgWidth = Background:getWidth()
+	love.graphics.draw(Background, -BGScrollProgress, 0, 0, 1.25, 1.25)
+	love.graphics.draw(Background, -BGScrollProgress + (bgWidth * 1.25), 0, 0, 1.25, 1.25)
+
 	local img = Animation.images[Animation.current]
 	local scaleX = HeroProps.w / Hero:getWidth()
 	local scaleY = HeroProps.h / Hero:getHeight()
