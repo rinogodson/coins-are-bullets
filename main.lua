@@ -1,9 +1,27 @@
+-- Comments are added to differentiate different parts of my code
+-- Love2D becomes crowdy when everything's working (i'm lazy for a more modular approach)
 _G.love = require("love")
+_G.anim8 = require("libraries.anim8")
 
 function love.load()
-	DEBUG = true
-
 	love.graphics.setDefaultFilter("nearest", "nearest")
+
+	-- COINS PART I'm doin
+	--
+	--
+	--
+	_G.coin = {}
+	coin.spriteSheet = love.graphics.newImage("coin.png")
+	coin.grid = anim8.newGrid(15, 15, coin.spriteSheet:getWidth(), coin.spriteSheet:getHeight())
+
+	coin.animation = anim8.newAnimation(coin.grid("1-8", 1), 0.2)
+	--
+	--
+	--
+	--
+	--
+
+	DEBUG = true
 
 	-- background repeated scrolling stuff
 	Backgrounds = {
@@ -48,6 +66,10 @@ end
 BACKSCROLLSPEEDFACTOR = 100
 
 function love.update(dt)
+	--
+	coin.animation:update(dt)
+	--
+
 	BGScrollProgress = BGScrollProgress + BACKSCROLLSPEEDFACTOR * dt
 	local bgWidth = Backgrounds[1]:getWidth() * 1.25
 	if BGScrollProgress >= bgWidth then
@@ -151,7 +173,7 @@ end
 function love.draw()
 	local bgWidth = Backgrounds[1]:getWidth()
 
-	for i, val in ipairs(Backgrounds) do
+	for _, val in ipairs(Backgrounds) do
 		love.graphics.draw(val, -BGScrollProgress, 0, 0, 1.25, 1.25)
 		love.graphics.draw(val, (-BGScrollProgress + (bgWidth * 1.25)), 0, 0, 1.25, 1.25)
 	end
@@ -174,7 +196,7 @@ function love.draw()
 		love.graphics.rectangle("line", r.x - r.w / 2, r.y - r.h / 2, r.w, r.h)
 	end
 	for _, c in ipairs(Coins) do
-		love.graphics.circle("fill", c.x, c.y, c.w / 2)
+		coin.animation:draw(coin.spriteSheet, c.x - 15, c.y - 15, nil, 2)
 	end
 	for _, b in ipairs(Bullets) do
 		love.graphics.circle("fill", b.x, b.y, b.w / 2)
