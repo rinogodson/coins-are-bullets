@@ -23,7 +23,7 @@ function love.load()
 	--
 	--
 
-	DEBUG = true
+	DEBUG = false
 
 	-- background repeated scrolling stuff
 	Backgrounds = {
@@ -55,10 +55,11 @@ function love.load()
 		h = Herosize / 2,
 		speed = 250,
 	}
-	Bullets = {}
+	CoinsList = {}
 	Bills = {}
 	Coins = {}
 	Score = 0
+	CollectedCoins = 0
 	GameSpeed = 300
 
 	Hero = love.graphics.newImage("superhero1.png")
@@ -71,6 +72,9 @@ function love.update(dt)
 	coin.animation:update(dt)
 	--
 
+	if Score < 0 then
+		love.event.quit("restart")
+	end
 	for _, bg in ipairs(Backgrounds) do
 		bg.scroll = bg.scroll + BACKSCROLLSPEEDFACTOR * bg.speed * dt
 		local bgW = bg.img:getWidth() * GLOBALBGCONST
@@ -102,13 +106,13 @@ function love.update(dt)
 		c.x = c.x - GameSpeed * dt
 	end
 
-	for _, b in ipairs(Bullets) do
+	for _, b in ipairs(CoinsList) do
 		b.x = b.x + 400 * dt
 	end
 
 	for i, c in ipairs(Coins) do
 		if CheckCollision(HeroProps, c) then
-			Score = Score + 1
+			CollectedCoins = CollectedCoins + 1
 			table.remove(Coins, i)
 		end
 	end
@@ -116,21 +120,23 @@ function love.update(dt)
 	for i = #Bills, 1, -1 do
 		local r = Bills[i]
 		if CheckCollision(HeroProps, Bills[i]) then
-			love.event.quit("restart")
+			table.remove(Bills, i)
+			Score = Score - 2
 		end
-		for j = #Bullets, 1, -1 do
-			local b = Bullets[j]
+		for j = #CoinsList, 1, -1 do
+			local b = CoinsList[j]
 			if CheckCollision(r, b) then
 				table.remove(Bills, i)
-				table.remove(Bullets, j)
+				table.remove(CoinsList, j)
+				Score = Score + 1
 				break
 			end
 		end
 	end
 
-	for i = #Bullets, 1, -1 do
-		if Bullets[i].x > WindowDims.x then
-			table.remove(Bullets, i)
+	for i = #CoinsList, 1, -1 do
+		if CoinsList[i].x > WindowDims.x then
+			table.remove(CoinsList, i)
 		end
 	end
 
@@ -200,10 +206,11 @@ function love.draw()
 	for _, c in ipairs(Coins) do
 		coin.animation:draw(coin.spriteSheet, c.x - 15, c.y - 15, nil, 2)
 	end
-	for _, b in ipairs(Bullets) do
+	for _, b in ipairs(CoinsList) do
 		love.graphics.circle("fill", b.x, b.y, b.w / 2)
 	end
 	love.graphics.print("Score: " .. Score, 10, 10)
+	love.graphics.print("Coins: " .. CollectedCoins, 10, 30)
 
 	--
 	--
@@ -227,7 +234,7 @@ function love.draw()
 		for _, r in ipairs(Bills) do
 			love.graphics.rectangle("line", r.x - r.w / 2, r.y - r.h / 2, r.w, r.h)
 		end
-		for _, b in ipairs(Bullets) do
+		for _, b in ipairs(CoinsList) do
 			love.graphics.rectangle("line", b.x - b.w / 2, b.y - b.h / 2, b.w, b.h)
 		end
 		for _, c in ipairs(Coins) do
@@ -245,7 +252,9 @@ end
 
 function love.keypressed(key)
 	if key == "space" then
-		table.insert(Bullets, { x = HeroProps.x + HeroProps.w / 2, y = HeroProps.y, w = 10, h = 5 })
-		Score = Score - 1
+		if CollectedCoins > 0 then
+			table.insert(CoinsList, { x = HeroProps.x + HeroProps.w / 2, y = HeroProps.y, w = 10, h = 5 })
+			CollectedCoins = CollectedCoins - 1
+		end
 	end
 end
