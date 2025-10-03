@@ -3,6 +3,8 @@
 _G.love = require("love")
 _G.anim8 = require("libraries.anim8")
 
+GLOBALBGCONST = 1.23
+
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 
@@ -25,10 +27,9 @@ function love.load()
 
 	-- background repeated scrolling stuff
 	Backgrounds = {
-		love.graphics.newImage("pBG/1.png"),
-		love.graphics.newImage("pBG/2.png"),
-		love.graphics.newImage("pBG/3.png"),
-		love.graphics.newImage("pBG/4.png"),
+		{ img = love.graphics.newImage("pBG/1.png"), speed = 0.2, scroll = 0 },
+		{ img = love.graphics.newImage("pBG/2.png"), speed = 0.4, scroll = 0 },
+		{ img = love.graphics.newImage("pBG/4.png"), speed = 0.6, scroll = 0 },
 	}
 	BGScrollProgress = 0
 
@@ -70,10 +71,12 @@ function love.update(dt)
 	coin.animation:update(dt)
 	--
 
-	BGScrollProgress = BGScrollProgress + BACKSCROLLSPEEDFACTOR * dt
-	local bgWidth = Backgrounds[1]:getWidth() * 1.25
-	if BGScrollProgress >= bgWidth then
-		BGScrollProgress = BGScrollProgress - bgWidth
+	for _, bg in ipairs(Backgrounds) do
+		bg.scroll = bg.scroll + BACKSCROLLSPEEDFACTOR * bg.speed * dt
+		local bgW = bg.img:getWidth() * GLOBALBGCONST
+		if bg.scroll >= bgW then
+			bg.scroll = bg.scroll - bgW
+		end
 	end
 
 	Animation.timer = Animation.timer + dt
@@ -171,11 +174,10 @@ end
 
 -- DRAW FN IS HERE VVV
 function love.draw()
-	local bgWidth = Backgrounds[1]:getWidth()
-
-	for _, val in ipairs(Backgrounds) do
-		love.graphics.draw(val, -BGScrollProgress, 0, 0, 1.25, 1.25)
-		love.graphics.draw(val, (-BGScrollProgress + (bgWidth * 1.25)), 0, 0, 1.25, 1.25)
+	for _, bg in ipairs(Backgrounds) do
+		local bgWidth = bg.img:getWidth() * GLOBALBGCONST
+		love.graphics.draw(bg.img, -bg.scroll, 0, 0, GLOBALBGCONST)
+		love.graphics.draw(bg.img, -bg.scroll + bgWidth, 0, 0, GLOBALBGCONST)
 	end
 
 	local img = Animation.images[Animation.current]
