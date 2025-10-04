@@ -15,15 +15,22 @@ function love.load()
 	_G.coin = {}
 	coin.spriteSheet = love.graphics.newImage("coin.png")
 	coin.grid = anim8.newGrid(15, 15, coin.spriteSheet:getWidth(), coin.spriteSheet:getHeight())
-
 	coin.animation = anim8.newAnimation(coin.grid("1-8", 1), 0.2)
 	--
 	--
+	-- BILLS PART I'm doin
+	--
+	--
+	_G.bill = {}
+	bill.spriteSheet = love.graphics.newImage("bills.png")
+	bill.grid = anim8.newGrid(19, 20, bill.spriteSheet:getWidth(), bill.spriteSheet:getHeight())
+	bill.animation = anim8.newAnimation(bill.grid("1-2", 1), 0.1)
+	--
 	--
 	--
 	--
 
-	DEBUG = false
+	DEBUG = true
 
 	-- background repeated scrolling stuff
 	Backgrounds = {
@@ -58,9 +65,13 @@ function love.load()
 	CoinsList = {}
 	Bills = {}
 	Coins = {}
-	Score = 0
+	Aura = 0
 	CollectedCoins = 0
 	GameSpeed = 300
+
+	Score = {}
+	Score.val = 0
+	Score.timer = 0
 
 	Hero = love.graphics.newImage("superhero1.png")
 end
@@ -70,9 +81,16 @@ BACKSCROLLSPEEDFACTOR = 100
 function love.update(dt)
 	--
 	coin.animation:update(dt)
+	bill.animation:update(dt)
 	--
+	--
+	Score.timer = Score.timer + dt
+	if Score.timer >= 1 then
+		Score.val = Score.val + 1
+		Score.timer = Score.timer - 1
+	end
 
-	if Score < 0 then
+	if Aura < 0 then
 		love.event.quit("restart")
 	end
 	for _, bg in ipairs(Backgrounds) do
@@ -121,14 +139,14 @@ function love.update(dt)
 		local r = Bills[i]
 		if CheckCollision(HeroProps, Bills[i]) then
 			table.remove(Bills, i)
-			Score = Score - 2
+			Aura = Aura - 2
 		end
 		for j = #CoinsList, 1, -1 do
 			local b = CoinsList[j]
 			if CheckCollision(r, b) then
 				table.remove(Bills, i)
 				table.remove(CoinsList, j)
-				Score = Score + 1
+				Aura = Aura + 1
 				break
 			end
 		end
@@ -201,7 +219,7 @@ function love.draw()
 	)
 
 	for _, r in ipairs(Bills) do
-		love.graphics.rectangle("line", r.x - r.w / 2, r.y - r.h / 2, r.w, r.h)
+		bill.animation:draw(bill.spriteSheet, r.x - 15, r.y - 15, nil, 2)
 	end
 	for _, c in ipairs(Coins) do
 		coin.animation:draw(coin.spriteSheet, c.x - 15, c.y - 15, nil, 2)
@@ -209,8 +227,9 @@ function love.draw()
 	for _, b in ipairs(CoinsList) do
 		love.graphics.circle("fill", b.x, b.y, b.w / 2)
 	end
-	love.graphics.print("Score: " .. Score, 10, 10)
+	love.graphics.print("Aura: " .. Aura, 10, 10)
 	love.graphics.print("Coins: " .. CollectedCoins, 10, 30)
+	love.graphics.print("Score: " .. Score.val, WindowDims.x / 2, 30)
 
 	--
 	--
