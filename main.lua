@@ -7,6 +7,8 @@ GLOBALBGCONST = 1.23
 
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
+	_G.jersey = love.graphics.newFont("Jersey.ttf", 32)
+	love.graphics.setFont(jersey)
 
 	-- COINS PART I'm doin
 	--
@@ -30,7 +32,7 @@ function love.load()
 	--
 	--
 
-	DEBUG = true
+	DEBUG = false
 
 	GameState = "splash"
 
@@ -72,12 +74,25 @@ function love.load()
 	Aura = 0
 	CollectedCoins = 0
 	GameSpeed = 300
-
 	Score = {}
 	Score.val = 0
 	Score.timer = 0
 
 	Hero = love.graphics.newImage("superhero1.png")
+
+	-- all the things for the ears
+	_G.gamesound = love.audio.newSource("sounds/gamesong.wav", "stream")
+	gamesound:setVolume(0.5)
+	gamesound:setLooping(true)
+	_G.gamesoundinfo = {}
+	gamesoundinfo.delay = 2
+	gamesoundinfo.timer = 0
+	gamesoundinfo.waiting = false
+
+	_G.startsound = love.audio.newSource("sounds/start.wav", "static")
+	startsound:setVolume(0.6)
+
+	_G.coinSound = love.audio.newSource("sounds/coin.wav", "static")
 end
 
 BACKSCROLLSPEEDFACTOR = 100
@@ -88,6 +103,14 @@ function love.update(dt)
 	elseif GameState == "gameover" then
 	--
 	else
+		if gamesoundinfo.waiting then
+			gamesoundinfo.timer = gamesoundinfo.timer + dt
+			if gamesoundinfo.timer >= gamesoundinfo.delay then
+				startsound:stop()
+				gamesound:play()
+				gamesoundinfo.waiting = false
+			end
+		end
 		--
 		coin.animation:update(dt)
 		bill.animation:update(dt)
@@ -101,13 +124,15 @@ function love.update(dt)
 
 		if Aura < 0 then
 			GameState = "gameover"
-			Score.val = 0
-			Score.timer = 0
 			Aura = 0
 			Coins = {}
+			Bills = {}
+			CoinsList = {}
 			Backgrounds[1].scroll = 0
 			Backgrounds[2].scroll = 0
 			Backgrounds[3].scroll = 0
+			gamesound:stop()
+			gamesoundinfo.waiting = false
 		end
 		for _, bg in ipairs(Backgrounds) do
 			bg.scroll = bg.scroll + BACKSCROLLSPEEDFACTOR * bg.speed * dt
@@ -147,6 +172,7 @@ function love.update(dt)
 		for i, c in ipairs(Coins) do
 			if CheckCollision(HeroProps, c) then
 				CollectedCoins = CollectedCoins + 1
+				coinSound:play()
 				table.remove(Coins, i)
 			end
 		end
@@ -222,15 +248,19 @@ function love.draw()
 
 		love.graphics.draw(SplashImage, 10, 10, 0, 0.6)
 
-		love.graphics.print("PRESS SPACE TO PLAY", (WindowDims.x / 2) - 50, WindowDims.y - 100)
+		love.graphics.setColor(0, 0, 0, 0.5)
+		love.graphics.printf("PRESS SPACE TO PLAY", 0, WindowDims.y - 100, WindowDims.x, "center")
+		love.graphics.setColor(1, 1, 1, 1)
 	--
 	elseif GameState == "gameover" then
 		for _, bg in ipairs(Backgrounds) do
 			love.graphics.draw(bg.img, 1, 0, 0, GLOBALBGCONST)
 		end
 
-		love.graphics.print("COINS ARE BULLETS. GAME OVER", 0, 0)
-		love.graphics.print("Score: " .. Score.val, 0, 10)
+		love.graphics.setColor(0, 0, 0)
+		love.graphics.printf("YOU ARE BANKRUPT! GAME OVER", 0, WindowDims.y / 3, WindowDims.x, "center")
+		love.graphics.printf("Score: " .. Score.val, 0, (WindowDims.y / 2) + 30, WindowDims.x, "center")
+		love.graphics.setColor(1, 1, 1, 1)
 	--
 	else
 		for _, bg in ipairs(Backgrounds) do
@@ -259,6 +289,7 @@ function love.draw()
 		for _, c in ipairs(Coins) do
 			coin.animation:draw(coin.spriteSheet, c.x - 15, c.y - 15, nil, 2)
 		end
+
 		for _, b in ipairs(CoinsList) do
 			love.graphics.circle("fill", b.x, b.y, b.w / 2)
 		end
@@ -299,10 +330,19 @@ function love.keypressed(key)
 	if GameState == "splash" then
 		if key == "space" then
 			GameState = "playing"
+			startsound:play()
+			gamesoundinfo.timer = 0
+			gamesoundinfo.waiting = true
 		end
 	elseif GameState == "gameover" then
 		if key == "space" then
+			Score.val = 0
+			Score.timer = 0
+
+			startsound:play()
 			GameState = "playing"
+			gamesoundinfo.timer = 0
+			gamesoundinfo.waiting = true
 		end
 	else
 		if key == "space" then
