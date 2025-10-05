@@ -8,6 +8,7 @@ GLOBALBGCONST = 1.23
 function love.load()
 	love.graphics.setDefaultFilter("nearest", "nearest")
 	_G.jersey = love.graphics.newFont("Jersey.ttf", 32)
+	_G.small_jersey = love.graphics.newFont("Jersey.ttf", 18)
 	love.graphics.setFont(jersey)
 
 	-- COINS PART I'm doin
@@ -100,6 +101,25 @@ function love.load()
 	_G.upanddownsound = love.audio.newSource("sounds/upanddown.wav", "static")
 
 	upanddownsound:setVolume(0.5)
+
+	ShowHelp = false
+	HelpCont = {
+		width = 500,
+		height = 300,
+		pad = 20,
+		bg = { 0, 0, 0, 0.9 },
+		text = [[ Game:
+  You're the superhero of your life!
+  You earn, spend, gain, or lose...
+  In this game, you need to collect Coins and use them as bullets against the Bills coming at you (you basically pay the bills).
+  When you pay a bill, you gain 1 Aura Point, and when you crash into a bill, you lose 3 Aura Points.
+  THE GOAL OF THE GAME IS: Don't let your Aura Points go negative.
+  Your score is determined by how long you survive.
+
+Controls:
+  <space> : shoot / start or restart
+  <UP/DOWN> : dodge the bills ]],
+	}
 end
 
 BACKSCROLLSPEEDFACTOR = 100
@@ -174,7 +194,7 @@ function love.update(dt)
 		end
 
 		for _, b in ipairs(CoinsList) do
-			b.x = b.x + 400 * dt
+			b.x = b.x + 300 * dt
 		end
 
 		for i, c in ipairs(Coins) do
@@ -259,7 +279,14 @@ function love.draw()
 		love.graphics.draw(SplashImage, 10, 10, 0, 0.6)
 
 		love.graphics.setColor(0, 0, 0, 0.5)
-		love.graphics.printf("PRESS SPACE TO PLAY", 0, WindowDims.y - 100, WindowDims.x, "center")
+		love.graphics.printf(
+			[[PRESS SPACE TO PLAY
+    How to play the game? Press H]],
+			0,
+			WindowDims.y - 100,
+			WindowDims.x,
+			"center"
+		)
 		love.graphics.setColor(1, 1, 1, 1)
 	--
 	elseif GameState == "gameover" then
@@ -301,11 +328,11 @@ function love.draw()
 		end
 
 		for _, b in ipairs(CoinsList) do
-			love.graphics.circle("fill", b.x, b.y, b.w / 2)
+			coin.animation:draw(coin.spriteSheet, b.x - 2, b.y - 2, nil, 1)
 		end
 		love.graphics.print("Aura: " .. Aura, 10, 10)
 		love.graphics.print("Coins: " .. CollectedCoins, 10, 30)
-		love.graphics.print("Score: " .. Score.val, WindowDims.x / 2, 30)
+		love.graphics.printf("Score: " .. Score.val, 0, 10, WindowDims.x - 20, "right")
 
 		--
 		--
@@ -334,11 +361,40 @@ function love.draw()
 		--
 		--
 	end
+
+	----------
+	---
+	if ShowHelp then
+		love.graphics.setFont(small_jersey)
+		love.graphics.setColor(HelpCont.bg)
+		love.graphics.rectangle(
+			"fill",
+			(WindowDims.x / 2) - (HelpCont.width / 2),
+			(WindowDims.y / 2) - (HelpCont.height / 2),
+			HelpCont.width,
+			HelpCont.height,
+			5,
+			5
+		)
+		love.graphics.setColor(1, 1, 1, 1)
+		love.graphics.setColor(1, 1, 1, 1)
+		love.graphics.printf(
+			HelpCont.text,
+			((WindowDims.x / 2) - (HelpCont.width / 2)) + HelpCont.pad,
+			((WindowDims.y / 2) - (HelpCont.height / 2)) + HelpCont.pad,
+			HelpCont.width - 2 * HelpCont.pad
+		)
+		love.graphics.setFont(jersey)
+	end
+	-------
 end
 
 function love.keypressed(key)
 	if key == "up" or key == "down" then
 		upanddownsound:play()
+	end
+	if key == "h" then
+		ShowHelp = not ShowHelp
 	end
 	if GameState == "splash" then
 		if key == "space" then
