@@ -82,7 +82,7 @@ function love.load()
 	Hero = love.graphics.newImage("superhero1.png")
 
 	-- all the things for the ears
-	_G.gamesound = love.audio.newSource("sounds/gamesong.wav", "stream")
+	_G.gamesound = love.audio.newSource("sounds/gamesong.wav", "static")
 	gamesound:setVolume(0.5)
 	gamesound:setLooping(true)
 	_G.gamesoundinfo = {}
