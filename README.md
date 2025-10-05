@@ -1,5 +1,8 @@
 <img width="965" height="305" alt="image" src="https://github.com/user-attachments/assets/173eabc2-5a42-4977-a213-c07149124083" />
+
 ## Coins are Bullets
+
+
 You're the superhero of your life!
 You earn, spend, gain, or lose...
 In this game, you need to collect Coins and use them as bullets against the Bills coming at you (you basically pay the bills).
