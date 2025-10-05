@@ -32,6 +32,8 @@ function love.load()
 
 	DEBUG = true
 
+	GameState = "splash"
+
 	-- background repeated scrolling stuff
 	Backgrounds = {
 		{ img = love.graphics.newImage("pBG/1.png"), speed = 0.2, scroll = 0 },
@@ -39,6 +41,8 @@ function love.load()
 		{ img = love.graphics.newImage("pBG/4.png"), speed = 0.6, scroll = 0 },
 	}
 	BGScrollProgress = 0
+
+	SplashImage = love.graphics.newImage("title.png")
 
 	-- all of these shit here is for the animation of the player to work
 	Animation = {
@@ -79,101 +83,114 @@ end
 BACKSCROLLSPEEDFACTOR = 100
 
 function love.update(dt)
+	if GameState == "splash" then
 	--
-	coin.animation:update(dt)
-	bill.animation:update(dt)
+	elseif GameState == "gameover" then
 	--
-	--
-	Score.timer = Score.timer + dt
-	if Score.timer >= 1 then
-		Score.val = Score.val + 1
-		Score.timer = Score.timer - 1
-	end
-
-	if Aura < 0 then
-		love.event.quit("restart")
-	end
-	for _, bg in ipairs(Backgrounds) do
-		bg.scroll = bg.scroll + BACKSCROLLSPEEDFACTOR * bg.speed * dt
-		local bgW = bg.img:getWidth() * GLOBALBGCONST
-		if bg.scroll >= bgW then
-			bg.scroll = bg.scroll - bgW
+	else
+		--
+		coin.animation:update(dt)
+		bill.animation:update(dt)
+		--
+		--
+		Score.timer = Score.timer + dt
+		if Score.timer >= 1 then
+			Score.val = Score.val + 1
+			Score.timer = Score.timer - 1
 		end
-	end
 
-	Animation.timer = Animation.timer + dt
-	if Animation.timer >= Animation.delay then
-		Animation.timer = Animation.timer - Animation.delay
-		Animation.current = Animation.current % #Animation.images + 1
-	end
-
-	local isChanging = false
-	local moveDir = 0
-
-	if math.random() < 0.02 then
-		table.insert(Bills, { x = WindowDims.x + 20, y = math.random(20, WindowDims.y - 20), w = 40, h = 40 })
-	end
-	if math.random() < 0.01 then
-		table.insert(Coins, { x = WindowDims.x + 10, y = math.random(10, WindowDims.y - 10), w = 20, h = 20 })
-	end
-
-	for _, bill in ipairs(Bills) do
-		bill.x = bill.x - GameSpeed * dt
-	end
-	for _, c in ipairs(Coins) do
-		c.x = c.x - GameSpeed * dt
-	end
-
-	for _, b in ipairs(CoinsList) do
-		b.x = b.x + 400 * dt
-	end
-
-	for i, c in ipairs(Coins) do
-		if CheckCollision(HeroProps, c) then
-			CollectedCoins = CollectedCoins + 1
-			table.remove(Coins, i)
+		if Aura < 0 then
+			GameState = "gameover"
+			Score.val = 0
+			Score.timer = 0
+			Aura = 0
+			Coins = {}
+			Backgrounds[1].scroll = 0
+			Backgrounds[2].scroll = 0
+			Backgrounds[3].scroll = 0
 		end
-	end
-
-	for i = #Bills, 1, -1 do
-		local r = Bills[i]
-		if CheckCollision(HeroProps, Bills[i]) then
-			table.remove(Bills, i)
-			Aura = Aura - 2
-		end
-		for j = #CoinsList, 1, -1 do
-			local b = CoinsList[j]
-			if CheckCollision(r, b) then
-				table.remove(Bills, i)
-				table.remove(CoinsList, j)
-				Aura = Aura + 1
-				break
+		for _, bg in ipairs(Backgrounds) do
+			bg.scroll = bg.scroll + BACKSCROLLSPEEDFACTOR * bg.speed * dt
+			local bgW = bg.img:getWidth() * GLOBALBGCONST
+			if bg.scroll >= bgW then
+				bg.scroll = bg.scroll - bgW
 			end
 		end
-	end
 
-	for i = #CoinsList, 1, -1 do
-		if CoinsList[i].x > WindowDims.x then
-			table.remove(CoinsList, i)
+		Animation.timer = Animation.timer + dt
+		if Animation.timer >= Animation.delay then
+			Animation.timer = Animation.timer - Animation.delay
+			Animation.current = Animation.current % #Animation.images + 1
 		end
-	end
 
-	if love.keyboard.isDown("up") then
-		HeroProps.y = HeroProps.y - HeroProps.speed * dt
-		isChanging = true
-		moveDir = -1
-	end
+		local isChanging = false
+		local moveDir = 0
 
-	if love.keyboard.isDown("down") then
-		HeroProps.y = HeroProps.y + HeroProps.speed * dt
-		isChanging = true
-		moveDir = 1
-	end
+		if math.random() < 0.02 then
+			table.insert(Bills, { x = WindowDims.x + 20, y = math.random(20, WindowDims.y - 20), w = 40, h = 40 })
+		end
+		if math.random() < 0.01 then
+			table.insert(Coins, { x = WindowDims.x + 10, y = math.random(10, WindowDims.y - 10), w = 20, h = 20 })
+		end
 
-	if isChanging then
-		HeroProps.rotation = (math.pi / 4) * moveDir
-	else
-		HeroProps.rotation = 0
+		for _, bill in ipairs(Bills) do
+			bill.x = bill.x - GameSpeed * dt
+		end
+		for _, c in ipairs(Coins) do
+			c.x = c.x - GameSpeed * dt
+		end
+
+		for _, b in ipairs(CoinsList) do
+			b.x = b.x + 400 * dt
+		end
+
+		for i, c in ipairs(Coins) do
+			if CheckCollision(HeroProps, c) then
+				CollectedCoins = CollectedCoins + 1
+				table.remove(Coins, i)
+			end
+		end
+
+		for i = #Bills, 1, -1 do
+			local r = Bills[i]
+			if CheckCollision(HeroProps, Bills[i]) then
+				table.remove(Bills, i)
+				Aura = Aura - 2
+			end
+			for j = #CoinsList, 1, -1 do
+				local b = CoinsList[j]
+				if CheckCollision(r, b) then
+					table.remove(Bills, i)
+					table.remove(CoinsList, j)
+					Aura = Aura + 1
+					break
+				end
+			end
+		end
+
+		for i = #CoinsList, 1, -1 do
+			if CoinsList[i].x > WindowDims.x then
+				table.remove(CoinsList, i)
+			end
+		end
+
+		if love.keyboard.isDown("up") then
+			HeroProps.y = HeroProps.y - HeroProps.speed * dt
+			isChanging = true
+			moveDir = -1
+		end
+
+		if love.keyboard.isDown("down") then
+			HeroProps.y = HeroProps.y + HeroProps.speed * dt
+			isChanging = true
+			moveDir = 1
+		end
+
+		if isChanging then
+			HeroProps.rotation = (math.pi / 4) * moveDir
+		else
+			HeroProps.rotation = 0
+		end
 	end
 end
 
@@ -198,82 +215,101 @@ end
 
 -- DRAW FN IS HERE VVV
 function love.draw()
-	for _, bg in ipairs(Backgrounds) do
-		local bgWidth = bg.img:getWidth() * GLOBALBGCONST
-		love.graphics.draw(bg.img, -bg.scroll, 0, 0, GLOBALBGCONST)
-		love.graphics.draw(bg.img, -bg.scroll + bgWidth, 0, 0, GLOBALBGCONST)
-	end
-
-	local img = Animation.images[Animation.current]
-	local scaleX = HeroProps.w / Hero:getWidth()
-	local scaleY = HeroProps.h / Hero:getHeight() * 2
-	love.graphics.draw(
-		img,
-		HeroProps.x,
-		HeroProps.y,
-		HeroProps.rotation,
-		scaleX,
-		scaleY,
-		Hero:getWidth() / 2,
-		Hero:getHeight() / 2
-	)
-
-	for _, r in ipairs(Bills) do
-		bill.animation:draw(bill.spriteSheet, r.x - 15, r.y - 15, nil, 2)
-	end
-	for _, c in ipairs(Coins) do
-		coin.animation:draw(coin.spriteSheet, c.x - 15, c.y - 15, nil, 2)
-	end
-	for _, b in ipairs(CoinsList) do
-		love.graphics.circle("fill", b.x, b.y, b.w / 2)
-	end
-	love.graphics.print("Aura: " .. Aura, 10, 10)
-	love.graphics.print("Coins: " .. CollectedCoins, 10, 30)
-	love.graphics.print("Score: " .. Score.val, WindowDims.x / 2, 30)
-
-	--
-	--
-	--
-	--
-	--
-	--
-	--
-	--
-	--
-	-- everything for debug things
-	if DEBUG then
-		love.graphics.setColor(1, 0, 0, 0.5)
-		love.graphics.rectangle(
-			"line",
-			HeroProps.x - HeroProps.w / 2,
-			HeroProps.y - HeroProps.h / 2,
-			HeroProps.w,
-			HeroProps.h
-		)
-		for _, r in ipairs(Bills) do
-			love.graphics.rectangle("line", r.x - r.w / 2, r.y - r.h / 2, r.w, r.h)
+	if GameState == "splash" then
+		for _, bg in ipairs(Backgrounds) do
+			love.graphics.draw(bg.img, 1, 0, 0, GLOBALBGCONST)
 		end
-		for _, b in ipairs(CoinsList) do
-			love.graphics.rectangle("line", b.x - b.w / 2, b.y - b.h / 2, b.w, b.h)
+
+		love.graphics.draw(SplashImage, 10, 10, 0, 0.6)
+
+		love.graphics.print("PRESS SPACE TO PLAY", (WindowDims.x / 2) - 50, WindowDims.y - 100)
+	--
+	elseif GameState == "gameover" then
+		for _, bg in ipairs(Backgrounds) do
+			love.graphics.draw(bg.img, 1, 0, 0, GLOBALBGCONST)
+		end
+
+		love.graphics.print("COINS ARE BULLETS. GAME OVER", 0, 0)
+		love.graphics.print("Score: " .. Score.val, 0, 10)
+	--
+	else
+		for _, bg in ipairs(Backgrounds) do
+			local bgWidth = bg.img:getWidth() * GLOBALBGCONST
+			love.graphics.draw(bg.img, -bg.scroll, 0, 0, GLOBALBGCONST)
+			love.graphics.draw(bg.img, -bg.scroll + bgWidth, 0, 0, GLOBALBGCONST)
+		end
+
+		local img = Animation.images[Animation.current]
+		local scaleX = HeroProps.w / Hero:getWidth()
+		local scaleY = HeroProps.h / Hero:getHeight() * 2
+		love.graphics.draw(
+			img,
+			HeroProps.x,
+			HeroProps.y,
+			HeroProps.rotation,
+			scaleX,
+			scaleY,
+			Hero:getWidth() / 2,
+			Hero:getHeight() / 2
+		)
+
+		for _, r in ipairs(Bills) do
+			bill.animation:draw(bill.spriteSheet, r.x - 15, r.y - 15, nil, 2)
 		end
 		for _, c in ipairs(Coins) do
-			love.graphics.circle("line", c.x, c.y, c.w / 2)
+			coin.animation:draw(coin.spriteSheet, c.x - 15, c.y - 15, nil, 2)
 		end
-		love.graphics.setColor(1, 1, 1, 1)
+		for _, b in ipairs(CoinsList) do
+			love.graphics.circle("fill", b.x, b.y, b.w / 2)
+		end
+		love.graphics.print("Aura: " .. Aura, 10, 10)
+		love.graphics.print("Coins: " .. CollectedCoins, 10, 30)
+		love.graphics.print("Score: " .. Score.val, WindowDims.x / 2, 30)
+
+		--
+		--
+		-- everything for debug things
+		if DEBUG then
+			love.graphics.setColor(1, 0, 0, 0.5)
+			love.graphics.rectangle(
+				"line",
+				HeroProps.x - HeroProps.w / 2,
+				HeroProps.y - HeroProps.h / 2,
+				HeroProps.w,
+				HeroProps.h
+			)
+			for _, r in ipairs(Bills) do
+				love.graphics.rectangle("line", r.x - r.w / 2, r.y - r.h / 2, r.w, r.h)
+			end
+			for _, b in ipairs(CoinsList) do
+				love.graphics.rectangle("line", b.x - b.w / 2, b.y - b.h / 2, b.w, b.h)
+			end
+			for _, c in ipairs(Coins) do
+				love.graphics.circle("line", c.x, c.y, c.w / 2)
+			end
+			love.graphics.setColor(1, 1, 1, 1)
+		end
+		--
+		--
+		--
 	end
-	--
-	--
-	--
-	--
-	--
-	--
 end
 
 function love.keypressed(key)
-	if key == "space" then
-		if CollectedCoins > 0 then
-			table.insert(CoinsList, { x = HeroProps.x + HeroProps.w / 2, y = HeroProps.y, w = 10, h = 5 })
-			CollectedCoins = CollectedCoins - 1
+	if GameState == "splash" then
+		if key == "space" then
+			GameState = "playing"
+		end
+	elseif GameState == "gameover" then
+		if key == "space" then
+			GameState = "playing"
+		end
+	else
+		if key == "space" then
+			if CollectedCoins > 0 then
+				table.insert(CoinsList, { x = HeroProps.x + HeroProps.w / 2, y = HeroProps.y, w = 10, h = 5 })
+				CollectedCoins = CollectedCoins - 1
+			end
 		end
 	end
 end
