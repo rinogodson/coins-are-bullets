@@ -93,6 +93,13 @@ function love.load()
 	startsound:setVolume(0.6)
 
 	_G.coinSound = love.audio.newSource("sounds/coin.wav", "static")
+
+	_G.gameoversound = love.audio.newSource("sounds/explosion.wav", "static")
+	_G.auralosingsound = love.audio.newSource("sounds/hurt.wav", "static")
+	_G.billPayment = love.audio.newSource("sounds/jump.wav", "static")
+	_G.upanddownsound = love.audio.newSource("sounds/upanddown.wav", "static")
+
+	upanddownsound:setVolume(0.5)
 end
 
 BACKSCROLLSPEEDFACTOR = 100
@@ -123,6 +130,7 @@ function love.update(dt)
 		end
 
 		if Aura < 0 then
+			gameoversound:play()
 			GameState = "gameover"
 			Aura = 0
 			Coins = {}
@@ -181,11 +189,13 @@ function love.update(dt)
 			local r = Bills[i]
 			if CheckCollision(HeroProps, Bills[i]) then
 				table.remove(Bills, i)
-				Aura = Aura - 2
+				auralosingsound:play()
+				Aura = Aura - 3
 			end
 			for j = #CoinsList, 1, -1 do
 				local b = CoinsList[j]
 				if CheckCollision(r, b) then
+					billPayment:play()
 					table.remove(Bills, i)
 					table.remove(CoinsList, j)
 					Aura = Aura + 1
@@ -327,6 +337,9 @@ function love.draw()
 end
 
 function love.keypressed(key)
+	if key == "up" or key == "down" then
+		upanddownsound:play()
+	end
 	if GameState == "splash" then
 		if key == "space" then
 			GameState = "playing"
